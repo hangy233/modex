@@ -1,5 +1,5 @@
 // source: https://gist.github.com/morajabi/523d7a642d8c0a2f71fcfa0d8b3d2846
-import { useLayoutEffect, useCallback, useState, useMemo } from "react";
+import { RefObject, useLayoutEffect, useCallback, useState, useMemo, useRef } from "react";
 import { debounce } from "../utils";
 
 type RectResult = {
@@ -24,9 +24,8 @@ function getRect<T extends HTMLElement>(element?: T): RectResult {
   return rect;
 }
 
-export function useRect<T extends HTMLElement>(
-  ref: React.RefObject<T>
-): RectResult {
+export function useRect<T extends HTMLElement>(): [RefObject<T>, RectResult] {
+  const ref = useRef<T>(null);
   const [rect, setRect] = useState<RectResult>(
     ref.current ? getRect(ref.current) : getRect()
   );
@@ -34,9 +33,9 @@ export function useRect<T extends HTMLElement>(
   const handleResize = useCallback(() => {
     if (!ref.current) return;
     setRect(getRect(ref.current)); // Update client rect
-  }, [ref]);
+  }, []);
 
-  const debouncedHandleResize = useMemo(() => debounce(handleResize), [ref]);
+  const debouncedHandleResize = useMemo(() => debounce(handleResize), []);
 
   useLayoutEffect(() => {
     const element = ref.current;
@@ -58,5 +57,5 @@ export function useRect<T extends HTMLElement>(
     }
   }, [ref.current]);
 
-  return rect;
+  return [ref, rect];
 }
