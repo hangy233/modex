@@ -10,18 +10,3 @@
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   justify-items: center;
 }
-
-.top-sentinel, .bottom-sentinel {
-  grid-column: 1 / -1;
-  height: 200px;
-  width: 100%;
-  /* background: black; */
-}
-
-.top-sentinel {
-  margin-top: -200px;
-}
-
-.bottom-sentinel {
-  margin-bottom: -200px;
-}

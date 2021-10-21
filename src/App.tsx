@@ -7,7 +7,7 @@ import { Dex } from './utils/consts';
 import { filterPms } from './utils';
 import DexSwitcher from './dexswitcher/DexSwitcher';
 import RecycledGrid from './recycledgrid/RecycledGrid';
-import PmItem from './pmitem/PmItem';
+import PmItem, {PmPlaceholder} from './pmitem/PmItem';
 
 function App() {
   const [gen8, setGen8] = useState([]);
@@ -29,7 +29,7 @@ function App() {
     <div className="App">
       <DexSwitcher onSwitch={setDexId} />
       <Loader fallback="Loading..." value={gen8}>
-        <RecycledGrid list={filteredPmList} ItemComponent={PmItem} itemWidth={104} itemHeight={116} keyField="nid" />
+        <RecycledGrid list={filteredPmList} ItemComponent={PmItem} PlaceholderComponent={PmPlaceholder} itemWidth={104} itemHeight={116} keyField="nid" />
       </Loader>
     </div>
   );

@@ -3,12 +3,12 @@ import 'intersection-observer';
 
 function useIntersectionObserver<T extends HTMLElement>(
   options?: IntersectionObserverInit,
-): [RefObject<T>, boolean, IntersectionObserverEntry | undefined] {
+): [RefObject<T>, boolean] {
   const ref = useRef(null);
-  const [entry, setEntry] = useState<IntersectionObserverEntry>();
+  const [isIntersecting, setIsIntersecting] = useState(false);
 
   const updateEntry = ([entry]: IntersectionObserverEntry[]) => {
-    setEntry(entry);
+    setIsIntersecting(!!entry?.isIntersecting);
   };
 
   useEffect(() => {
@@ -20,10 +20,10 @@ function useIntersectionObserver<T extends HTMLElement>(
 
     observer.observe(element);
 
-    return observer.disconnect;
-  }, [ref, options?.threshold, options?.root, options?.rootMargin]);
+    return () => observer.disconnect();
+  }, [ref, options, options?.threshold, options?.root, options?.rootMargin]);
 
-  return [ref, !!entry?.isIntersecting, entry];
+  return [ref, isIntersecting];
 }
 
 export default useIntersectionObserver;

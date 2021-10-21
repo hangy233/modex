@@ -1,6 +1,6 @@
 // source: https://gist.github.com/morajabi/523d7a642d8c0a2f71fcfa0d8b3d2846
-import { RefObject, useLayoutEffect, useCallback, useState, useMemo, useRef } from "react";
-import { debounce } from "../utils";
+import { RefObject, useLayoutEffect, useState, useRef } from "react";
+import { useDebouncedCallback } from "../../node_modules/use-debounce/lib";
 
 type RectResult = {
   bottom: number;
@@ -30,12 +30,12 @@ export function useRect<T extends HTMLElement>(): [RefObject<T>, RectResult] {
     ref.current ? getRect(ref.current) : getRect()
   );
 
-  const handleResize = useCallback(() => {
+  const handleResize = () => {
     if (!ref.current) return;
     setRect(getRect(ref.current)); // Update client rect
-  }, []);
+  };
 
-  const debouncedHandleResize = useMemo(() => debounce(handleResize), []);
+  const debouncedHandleResize = useDebouncedCallback(handleResize, 200);
 
   useLayoutEffect(() => {
     const element = ref.current;
@@ -55,7 +55,7 @@ export function useRect<T extends HTMLElement>(): [RefObject<T>, RectResult] {
       window.addEventListener("resize", debouncedHandleResize); // Browser support, remove freely
       return () => window.removeEventListener("resize", debouncedHandleResize);
     }
-  }, [ref.current]);
+  }, [ref]);
 
   return [ref, rect];
 }

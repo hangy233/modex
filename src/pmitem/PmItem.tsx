@@ -3,22 +3,25 @@ import { getSpriteUrl } from '../utils';
 import './PmItem.css';
 
 export type PmItemProps = {
-  name: string;
+  name?: string;
   nid: number;
   id: number;
 };
 
-const PmItem = ({name, id, nid}: PmItemProps): JSX.Element => {
+const PmItem = ({name = '', id, nid}: PmItemProps): JSX.Element => {
   return (
   <div
     className="pm-item"
     data-dex-id={id}
     data-national-id={nid}
-    style={{backgroundImage: `url(${getSpriteUrl(nid)})`}}
+    style={name ? {backgroundImage: `url(${getSpriteUrl(nid)})`} : undefined}
     >
     <span>{name}</span>
-    {/* <img src={getSpriteUrl(nid)} /> */}
   </div>);
+}
+
+export const PmPlaceholder = ({id, nid}: PmItemProps): JSX.Element => {
+  return <PmItem id={id} nid={nid} />;
 }
 
 export default PmItem;

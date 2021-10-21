@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import useIntersectionObserver from '../hooks/useIntersectionObserver';
+import React, { useState } from 'react';
+import { useThrottledCallback } from '../../node_modules/use-debounce/lib';
 import { useRect } from '../hooks/useRect';
-import { debounce } from '../utils';
 import './RecycledGrid.css';
 
 type RecycledGridProps<T> = {
@@ -11,60 +10,48 @@ type RecycledGridProps<T> = {
   initCursor?: number;
   keyField?: string;
   ItemComponent: React.ComponentType<T>;
+  PlaceholderComponent: React.ComponentType<T>;
 }
 
-const RecycledGrid = ({list, ItemComponent, itemWidth, itemHeight, initCursor = 0, keyField} : RecycledGridProps<any>): JSX.Element => {
+const RecycledGrid = ({list, ItemComponent, PlaceholderComponent, itemWidth, itemHeight, initCursor = 0, keyField} : RecycledGridProps<any>): JSX.Element => {
   const [gridRef, {width: gridWidth, height: gridHeight}] = useRect<HTMLDivElement>();
-  const [topSentinelRef, isTopSentinelInView] = useIntersectionObserver<HTMLDivElement>({rootMargin: '100px 0px 100px 0px'});
-  const [bottomSentinelRef, isBottomSentinelInView] = useIntersectionObserver<HTMLDivElement>();
   const columns = (gridWidth / itemWidth) | 0;
   const rows = (list.length / columns) | 0 + 1;
   const scrollHeight = rows * itemHeight;
   const visibleRows = (gridHeight / itemHeight) | 0 + 1;
 
-  const [cursor, setCursor] = useState(initCursor);
-  const [scrollTop, setScrollTop] = useState((initCursor / columns) | 0);
+  const [scrollTop, setScrollTop] = useState(initCursor * itemHeight);
+  const cursor = (scrollTop / itemHeight) | 0;
 
-  useEffect(() => {
-    if (isTopSentinelInView) {
-      setCursor((prevCursor) => Math.max(0, prevCursor - visibleRows * columns));
-    }
-  }, [isTopSentinelInView]);
+  const start = Math.max((cursor - visibleRows) * columns, 0);
+  const end = (cursor + visibleRows * 2) * columns;
+  // const topPadding = Math.max(0, cursor - visibleRows) * itemHeight;
+  // const bottomPadding = (rows - cursor + visibleRows * 2) * itemHeight;
 
-  useEffect(() => {
-    if (isBottomSentinelInView) {
-      setCursor((prevCursor) => Math.min((rows - visibleRows * 2) * columns, prevCursor + visibleRows * columns));
-    }
-  }, [isBottomSentinelInView]);
+  // const isOff = () => {
+  //   if (!gridRef.current) return false;
+  //   return gridRef.current.scrollTop < topPadding || gridRef.current.scrollTop > (scrollHeight - bottomPadding);
+  // }
 
-  useEffect(() => {
-    if ((scrollTop < topPadding) || (scrollTop > (scrollHeight - bottomPadding))) {
-      setCursor(((scrollTop / itemHeight) | 0) * columns);
-    }
-  }, [scrollTop]);
-
-  const start = Math.max(cursor - visibleRows * columns, 0);
-  const end = cursor + visibleRows * 2 * columns;
-  const filteredList = list.slice(start, end);
-  const topPadding = Math.max(0, cursor / columns - visibleRows) * itemHeight;
-  const bottomPadding = (rows - cursor / columns + visibleRows * 2) * itemHeight;
-
-  const handleScroll = useCallback(() => {
+  const handleScroll = () => {
     if (!gridRef.current) return;
     setScrollTop(gridRef.current.scrollTop);
-  }, []);
+  }
 
-  const debouncedHandleScroll = useMemo(() => debounce(handleScroll), []);
+  const throttledHandleScroll = useThrottledCallback(handleScroll, 200);
 
   return (
-    <div ref={gridRef} className="recycled-grid" style={{
-      gridTemplateColumns: `repeat(auto-fill, minmax(${itemWidth}px, 1fr))`,
-      }} onScroll={debouncedHandleScroll}>
+    <div ref={gridRef} className="recycled-grid" onScroll={throttledHandleScroll}>
       <div className="scroll-content" style={{height: `${scrollHeight}px`}}>
-        <div className="inner-grid-content" style={{transform: `translateY(${topPadding}px)`}}>
-          <div ref={topSentinelRef} className="top-sentinel"></div>
-          {filteredList.map((item, i) => <ItemComponent key={keyField ? item[keyField] : i} {...item} />)}
-          <div ref={bottomSentinelRef} className="bottom-sentinel"></div>
+        <div className="inner-grid-content" style={{
+          gridTemplateColumns: `repeat(auto-fill, minmax(${itemWidth}px, 1fr))`,
+          }}>
+          {list.map((item, i) => {
+            if (i >= start && i < end) {
+              return <ItemComponent key={keyField ? item[keyField] : i} {...item} />
+            }
+            return <PlaceholderComponent key={keyField ? item[keyField] : i} {...item} />
+          })}
         </div>
       </div>
     </div>
