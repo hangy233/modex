@@ -1,15 +1,15 @@
-import { DEX_COUNT, Dex, Pm, SPRITE_BASE_URL } from "./consts";
+import { DEX_COUNT, DexId, Pm, SPRITE_BASE_URL } from "./consts";
 
 const arrSum = (arr: Array<any>) => arr.reduce((a,b) => a + b, 0);
 
-export const filterPms = (pms: Array<Pm>, dexId: Dex = Dex.Unspecified) => {
-  const filtered = dexId === Dex.Unspecified ? pms : pms
+export const filterPms = (pms: Array<Pm>, dexId: DexId = DexId.Unspecified) => {
+  const filtered = dexId === DexId.Unspecified ? pms : pms
     .filter((pm: Pm) => pm.dex.some(({pokedex_id}) => pokedex_id === dexId));
 
   return filtered
       .map((pm: Pm) => {
         const dex = pm.dex.find(({pokedex_id}) => pokedex_id === dexId) || pm.dex[0];
-        const idIncrease = dexId === Dex.Unspecified ? arrSum(DEX_COUNT.slice(0, dex.pokedex_id - Dex.Swsh)) : 0;
+        const idIncrease = dexId === DexId.Unspecified ? arrSum(DEX_COUNT.slice(0, dex.pokedex_id - DexId.Swsh)) : 0;
 
         return {
           name: pm.name[0].name,

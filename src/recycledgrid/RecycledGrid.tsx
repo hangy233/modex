@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useThrottledCallback } from '../../node_modules/use-debounce/lib';
 import { useRect } from '../hooks/useRect';
 import './RecycledGrid.css';
@@ -25,13 +25,19 @@ const RecycledGrid = ({list, ItemComponent, PlaceholderComponent, itemWidth, ite
 
   const start = Math.max((cursor - visibleRows) * columns, 0);
   const end = (cursor + visibleRows * 2) * columns;
-  // const topPadding = Math.max(0, cursor - visibleRows) * itemHeight;
-  // const bottomPadding = (rows - cursor + visibleRows * 2) * itemHeight;
+  const topPadding = Math.max(0, cursor - visibleRows * 2) * itemHeight;
+  // const bottomPadding = (rows - cursor + visibleRows * 3) * itemHeight;
 
   // const isOff = () => {
   //   if (!gridRef.current) return false;
   //   return gridRef.current.scrollTop < topPadding || gridRef.current.scrollTop > (scrollHeight - bottomPadding);
   // }
+
+  // useEffect(() => {
+  //   if (!gridRef?.current?.scrollTop) return;
+  //   if (gridRef.current.scrollTop === initCursor * itemHeight) return;
+  //   gridRef.current.scrollTop = initCursor * itemHeight;
+  // }, [gridRef, initCursor, itemHeight, list]);
 
   const handleScroll = () => {
     if (!gridRef.current) return;
@@ -45,12 +51,16 @@ const RecycledGrid = ({list, ItemComponent, PlaceholderComponent, itemWidth, ite
       <div className="scroll-content" style={{height: `${scrollHeight}px`}}>
         <div className="inner-grid-content" style={{
           gridTemplateColumns: `repeat(auto-fill, minmax(${itemWidth}px, 1fr))`,
+          transform: `translateY(${topPadding}px)`,
           }}>
           {list.map((item, i) => {
             if (i >= start && i < end) {
               return <ItemComponent key={keyField ? item[keyField] : i} {...item} />
             }
-            return <PlaceholderComponent key={keyField ? item[keyField] : i} {...item} />
+            if ((i >= start - visibleRows * columns) && i < (end + visibleRows * columns)) {
+              return <PlaceholderComponent key={keyField ? item[keyField] : i} {...item} />
+            }
+            return null;
           })}
         </div>
       </div>

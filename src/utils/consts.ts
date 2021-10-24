@@ -1,5 +1,5 @@
 export const DEX_COUNT = [400, 211, 210]; // SWSH, IoA, CT
-
+export const DEX_CODE = ['swsh', 'ioa', 'ct'];
 export const LAN_ID: {
   [key: string]: number;
 } = {
@@ -16,16 +16,23 @@ export const LAN_ID: {
   'zh-Hans': 12,
 };
 
-export enum Dex {
+export enum DexId {
   Unspecified = -1,
   Swsh = 27,
   Ioa = 28,
   Ct = 29,
-}
+};
+
+export const DEX_CODE_TO_ID = {
+  [DEX_CODE[0]]: DexId.Swsh,
+  [DEX_CODE[1]]: DexId.Ioa,
+  [DEX_CODE[2]]: DexId.Ct,
+  '': DexId.Unspecified,
+};
 
 export type Pm = {
   name: {name: string}[];
-  dex: {pokedex_id: Dex; pokedex_number: number}[];
+  dex: {pokedex_id: DexId; pokedex_number: number}[];
   id: number;
 };
 
