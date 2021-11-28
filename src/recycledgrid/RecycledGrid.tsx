@@ -5,6 +5,7 @@ import './RecycledGrid.css';
 
 type RecycledGridProps<T> = {
   list: Array<T>;
+  extraItemProps: Object;
   itemWidth: number;
   itemHeight: number;
   initCursor?: number;
@@ -13,7 +14,7 @@ type RecycledGridProps<T> = {
   PlaceholderComponent: React.ComponentType<T>;
 }
 
-const RecycledGrid = ({list, ItemComponent, PlaceholderComponent, itemWidth, itemHeight, initCursor = 0, keyField} : RecycledGridProps<any>): JSX.Element => {
+const RecycledGrid = ({list, ItemComponent, PlaceholderComponent, itemWidth, itemHeight, initCursor = 0, keyField, ...extraItemProps} : RecycledGridProps<any>): JSX.Element => {
   const [gridRef, {width: gridWidth, height: gridHeight}] = useRect<HTMLDivElement>();
   const columns = (gridWidth / itemWidth) | 0;
   const rows = (list.length / columns) | 0 + 1;
@@ -55,10 +56,10 @@ const RecycledGrid = ({list, ItemComponent, PlaceholderComponent, itemWidth, ite
           }}>
           {list.map((item, i) => {
             if (i >= start && i < end) {
-              return <ItemComponent key={keyField ? item[keyField] : i} {...item} />
+              return <ItemComponent key={keyField ? item[keyField] : i} {...item} {...extraItemProps} />
             }
             if ((i >= start - visibleRows * columns) && i < (end + visibleRows * columns)) {
-              return <PlaceholderComponent key={keyField ? item[keyField] : i} {...item} />
+              return <PlaceholderComponent key={keyField ? item[keyField] : i} {...item} {...extraItemProps} />
             }
             return null;
           })}

@@ -1,30 +1,35 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { LinkWithQuery } from '../linkwithquery/LinkWithQuery';
 import { getSpriteUrl } from '../utils';
+import { VERSION } from '../utils/consts';
 import './PmItem.css';
 
 export type PmItemProps = {
   name?: string;
-  nid: number;
-  id: number;
+  nationalId: number;
 };
 
-const PmItem = ({name = '', id, nid}: PmItemProps): JSX.Element => {
+const PmItem = ({name = '', nationalId}: PmItemProps): JSX.Element => {
+  let [searchParams, setSearchParams] = useSearchParams();
+  const versionParam = searchParams.get('version');
+  const version = versionParam ? parseInt(versionParam, 10) : VERSION.red;
+
   return (
-    <Link to={`/poke/${nid}`}>
+    <LinkWithQuery to={`p/${nationalId}`}>
       <div
         className="pm-item"
-        data-dex-id={id}
-        data-national-id={nid}
-        style={name ? {backgroundImage: `url(${getSpriteUrl(nid)})`} : undefined}
+        data-version-id={version}
+        data-national-id={nationalId}
+        style={name ? {backgroundImage: `url(${getSpriteUrl({version ,nationalId})})`} : undefined}
         >
         <span>{name}</span>
       </div>
-    </Link>);
-}
+    </LinkWithQuery>);
+};
 
-export const PmPlaceholder = ({id, nid}: PmItemProps): JSX.Element => {
-  return <PmItem id={id} nid={nid} />;
-}
+export const PmPlaceholder = ({nationalId}: PmItemProps): JSX.Element => {
+  return <PmItem nationalId={nationalId} />;
+};
 
 export default PmItem;

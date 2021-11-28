@@ -1,32 +1,97 @@
-import { DEX_COUNT, DexId, Pm, SPRITE_BASE_URL } from "./consts";
+import { SPRITE_BASE_URL, VERSION } from "./consts";
 
-const arrSum = (arr: Array<any>) => arr.reduce((a,b) => a + b, 0);
-
-export const filterPms = (pms: Array<Pm>, dexId: DexId = DexId.Unspecified) => {
-  const filtered = dexId === DexId.Unspecified ? pms : pms
-    .filter((pm: Pm) => pm.dex.some(({pokedex_id}) => pokedex_id === dexId));
-
-  return filtered
-      .map((pm: Pm) => {
-        const dex = pm.dex.find(({pokedex_id}) => pokedex_id === dexId) || pm.dex[0];
-        const idIncrease = dexId === DexId.Unspecified ? arrSum(DEX_COUNT.slice(0, dex.pokedex_id - DexId.Swsh)) : 0;
-
-        return {
-          name: pm.name[0].name,
-          nid: pm.id,
-          id: dex.pokedex_number + idIncrease,
-        }
-      })
-      .sort((a: { id: number; }, b: { id: number; }) => a.id - b.id);
+export const versionToGen = (version: VERSION): number => {
+  let gen = 1;
+  if (version >= VERSION.gold) {
+    gen++;
+  }
+  if (version >= VERSION.ruby) {
+    gen++;
+  }
+  if (version >= VERSION.diamond) {
+    gen++;
+  }
+  if (version >= VERSION.black) {
+    gen++;
+  }
+  if (version >= VERSION.x) {
+    gen++;
+  }
+  if (version >= VERSION.sun) {
+    gen++;
+  }
+  if (version >= VERSION.sword) {
+    gen++;
+  }
+  return gen;
 };
 
-export const getCanonicalName = (name: string) => name.replaceAll('.', '').replaceAll(' ', '-').toLowerCase();
-export const getSpriteUrl = (nid: number) => `${SPRITE_BASE_URL}regular/${nid}.png`;
+const VERSION_KEYS: string[] = Object.keys(VERSION).filter((k) => typeof VERSION[k as any] === 'number');
+const VERSION_VALUES: VERSION[] = Array(VERSION_KEYS.length).fill(0).map((v, i) => i+1);
 
-export const debounce = (func: Function, wait = 200) => {
+export const getVersionsFromSameGen = (version: VERSION): VERSION[] => {
+  const gen = versionToGen(version);
+  return VERSION_VALUES.filter((v) => versionToGen(v) === gen);
+};
+
+const versionToSpriteVersion = (version: VERSION): string => {
+  switch (version) {
+    case VERSION.red:
+    case VERSION.blue:
+      return 'red-blue';
+    case VERSION.yellow:
+      return 'yellow';
+    case VERSION.gold:
+      return 'gold';
+    case VERSION.silver:
+      return 'silver';
+    case VERSION.crystal:
+      return 'crystal';
+    case VERSION.ruby:
+    case VERSION.sapphire:
+      return 'ruby-sapphire';
+    case VERSION.firered:
+    case VERSION.leafgreen:
+      return 'firered-leafgreen';
+    case VERSION.emerald:
+      return 'emerald';
+  }
+
+  return '';
+};
+
+// export const arrSum = (arr: Array<any>) => arr.reduce((a,b) => a + b, 0);
+// export const getCanonicalName = (name: string) => name.replaceAll('.', '').replaceAll(' ', '-').toLowerCase();
+// export const getSpriteUrl = (nid: number) => `${SPRITE_BASE_URL}regular/${nid}.png`;
+//https://storage.googleapis.com/retrodex/sprites/gen1/main-sprites/red-blue/1.png
+export const getSpriteUrl = ({version, nationalId}: {version: VERSION, nationalId: number}): string => {
+  return `${SPRITE_BASE_URL}gen${versionToGen(version)}/main-sprites/${versionToSpriteVersion(version)}/${nationalId}.png`;
+};
+
+export const debounce = (func: Function, wait: number = 200): Function => {
   let timeoutId: ReturnType<typeof setTimeout>;
   return function(this: any, ...args: any[]) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func.apply(this, args), wait);
   };
+};
+
+// TODO: i13n.
+export const versionToName = (version: VERSION): string => {
+  switch (version) {
+    case VERSION.red:
+      return 'red';
+    case VERSION.blue:
+      return 'blue';
+    case VERSION.yellow:
+      return 'yellow';
+    case VERSION.gold:
+      return 'gold';
+    case VERSION.silver:
+      return 'silver';
+    case VERSION.crystal:
+      return 'crystal';
+  }
+
+  return '';
 };
