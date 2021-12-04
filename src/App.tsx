@@ -4,6 +4,7 @@ import Dex from './dex/Dex';
 import PmView from './pmview/PmView';
 import { VERSION } from './utils/consts';
 import SelectorHeader from './selectorheader/SelectorHeader';
+import LocaleProvider from './i18n/LocaleContext';
 
 const Root = () => {
   return <>
@@ -15,12 +16,14 @@ const Root = () => {
 function App() {
   return (
     <div className="App">
-      <Routes>
-        <Route path="/" element={<Root />} >
-          <Route path="/" element={<Dex />} />
-          <Route path="/p/:nationalId" element={<PmView />} />
-        </Route>
-      </Routes>
+      <LocaleProvider>
+        <Routes>
+          <Route path="/" element={<Root />} >
+            <Route path="/" element={<Dex />} />
+            <Route path="/p/:nationalId" element={<PmView />} />
+          </Route>
+        </Routes>
+      </LocaleProvider>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { SPRITE_BASE_URL, VERSION } from "./consts";
+import { LAN, LANGUAGES, LAN_NAMES, SPRITE_BASE_URL, VERSION } from "./consts";
 
 export const versionToGen = (version: VERSION): number => {
   let gen = 1;
@@ -95,3 +95,7 @@ export const versionToName = (version: VERSION): string => {
 
   return '';
 };
+
+export const getLanguage = (lan: LAN) => {
+  return LANGUAGES.find((l) => l.id === lan);
+}

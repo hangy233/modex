@@ -1,23 +1,29 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { getVersionsFromSameGen, versionToName } from '../../utils';
-import { LAN, LAN_NAMES, LAN_NAME_TO_ID, VERSION } from '../../utils/consts';
+import { LAN, LANGUAGES, LAN_NAMES, VERSION } from '../../utils/consts';
 import { useParams } from "react-router";
+import { useContext } from 'react';
+import { LocaleContext } from '../../i18n/LocaleContext';
 
 type LanSelectorProps = {
   onChange: (lan: LAN) => void,
 };
 
 const LanSelector = ({onChange}: LanSelectorProps): JSX.Element => {
+  const {currentLan, switchLan} = useContext(LocaleContext);
   const selectLan = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const lan = event.target?.value;
-    if (!lan || !LAN_NAME_TO_ID[lan]) return;
-    onChange(LAN_NAME_TO_ID[lan]);
+    const lanString = event.target?.value;
+    if (!lanString) return;
+    const lan = parseInt(lanString,10);
+
+    onChange(lan);
+    switchLan(lan);
   };
 
   return (
     <select onChange={selectLan}>
-      {LAN_NAMES.map((lanName) => (
-        <option value={lanName}>{lanName}</option>
+      {LANGUAGES.map(({name, id}) => (
+        <option value={id} selected={currentLan === id}>{name}</option>
       ))}
     </select>
   );

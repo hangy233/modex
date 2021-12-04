@@ -12,22 +12,61 @@ export enum LAN {
   'zh-Hans',
 };
 
-export const LAN_NAME_TO_ID: {
-  [key: string]: LAN,
- } = {
-  'English': LAN.en,
-  'Español': LAN.es,
-  'Français': LAN.fr,
-  'Deutsch': LAN.de,
-  'Italiano': LAN.it,
-  'にほんご': LAN['ja-Hrkt'],
-  '日本語': LAN.ja,
-  '한국어': LAN.ko,
-  '简体中文': LAN['zh-Hans'],
-  '繁體中文': LAN['zh-Hant'],
-};
+//TODO: add language type
+export const LANGUAGES = [
+  {
+    code: 'ja-Hrkt',
+    name: 'にほんご',
+    id: LAN['ja-Hrkt'],
+  },
+  {
+    code: 'ko',
+    name: '한국어',
+    id: LAN.ko,
+  },
+  {
+    code: 'zh-Hant',
+    name: '繁體中文',
+    id: LAN['zh-Hant'],
+  },
+  {
+    code: 'fr',
+    name: 'Français',
+    id: LAN.fr,
+  },
+  {
+    code: 'de',
+    name: 'Deutsch',
+    id: LAN.de,
+  },
+  {
+    code: 'es',
+    name: 'Español',
+    id: LAN.es,
+  },
+  {
+    code: 'it',
+    name: 'Italiano',
+    id: LAN.it,
+  },
+  {
+    code: 'en',
+    name: 'English',
+    id: LAN.en,
+  },
+  {
+    code: 'ja',
+    name: '日本語',
+    id: LAN.ja,
+  },
+  {
+    code: 'zh-Hans',
+    name: '简体中文',
+    id: LAN['zh-Hans'],
+  },
+];
 
-export const LAN_NAMES = Object.keys(LAN_NAME_TO_ID);
+export const LAN_NAMES = LANGUAGES.map((l) => l.name);
 
 export enum VERSION {
   'red' = 1,

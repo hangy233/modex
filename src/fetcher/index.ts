@@ -5,6 +5,8 @@ import {
   useQuery,
   gql
 } from '@apollo/client';
+import axios from 'axios';
+import { getLanguage } from '../utils';
 import { LAN } from '../utils/consts';
 
 const client = new ApolloClient({
@@ -33,4 +35,9 @@ export async function fetchGen1(lan: number = LAN.en) {
     `});
   
   return res.data.names.map((item: PmName) => ({nationalId: item.id, name: item.pokemon_v2_pokemonspeciesnames[0].name}));
+}
+
+export async function fetchI18nTexts(lan: LAN = LAN.en): Promise<{[key: string]: string}> {
+  const res = await axios.get(`https://storage.googleapis.com/retrodex/i18n/locales/${getLanguage(lan)?.code}.json`);
+  return res.data;
 }
