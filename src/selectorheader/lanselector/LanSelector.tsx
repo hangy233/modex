@@ -21,9 +21,9 @@ const LanSelector = ({onChange}: LanSelectorProps): JSX.Element => {
   };
 
   return (
-    <select onChange={selectLan}>
+    <select onChange={selectLan} defaultValue={currentLan}>
       {LANGUAGES.map(({name, id}) => (
-        <option value={id} selected={currentLan === id}>{name}</option>
+        <option value={id}>{name}</option>
       ))}
     </select>
   );

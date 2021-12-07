@@ -17,6 +17,10 @@ type FetchState = {
   },
 };
 
+type StringsState = {[key: number]: {[key: string]: string}};
+
+type LanNameSpacePair = {nameSpace: STRING_NAMESPACE, lan: LAN};
+
 export const LocaleContext = createContext<{switchLan: (lan:LAN) => void, strings: {[key: string]: string}, currentLan: LAN}>({
   switchLan: (lan: LAN) => {},
   strings: {},
@@ -25,8 +29,7 @@ export const LocaleContext = createContext<{switchLan: (lan:LAN) => void, string
 
 const LocaleProvider = ({children}: {children: ReactNode}) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [strings, setStrings] = useState<{[key: number]: {[key: string]: string}}>({});
-  const [lan, setLan] = useState<LAN>(LAN.en);
+  const [strings, setStrings] = useState<StringsState>({});
   const [fetchState, setFetchStateInternal] = useState<FetchState>({});
   const nextLanRef = useRef<LAN|null>(null);
 
@@ -39,66 +42,89 @@ const LocaleProvider = ({children}: {children: ReactNode}) => {
     return lan;
   };
 
-  const getFetchState = ({nameSpace, lan}: {nameSpace: STRING_NAMESPACE, lan: LAN}) => {
+  const [lan, setLan] = useState<LAN>(getLanFromParam());
+
+  const getFetchState = ({nameSpace, lan}: LanNameSpacePair) => {
     if (!fetchState[lan]) return STATE.notFetched;
     if (!fetchState[lan][nameSpace]) return STATE.notFetched;
     return fetchState[lan][nameSpace];
   }
 
-  const setFetchState = ({nameSpace, lan, state}: {nameSpace: STRING_NAMESPACE, lan: LAN, state: STATE}) => {
+  const setFetchState = ({lanNameSpacePairs, state}: {lanNameSpacePairs: LanNameSpacePair[], state: STATE}) => {
     setFetchStateInternal((prevState) => {
+      const newState: FetchState = {};
+      for (const {lan, nameSpace} of lanNameSpacePairs) {
+        if (!newState[lan]) {
+          newState[lan] = {...prevState[lan]};
+        }
+        newState[lan][nameSpace] = state;
+      }
+
       return {
         ...prevState,
-        [lan]: {
-          ...prevState[lan],
-          [nameSpace]: state,
-        }
+        ...newState,
       };
     });
   }
 
   // TODO: ability to force fetch?
-  const fetchLan = ({nameSpaces, lan}: {nameSpaces: STRING_NAMESPACE[], lan: LAN}): boolean => {
-    let needFetch = false;
-    for (const nameSpace of nameSpaces) {
-      if (strings[lan] && strings[nameSpace]) continue;
-      if (getFetchState({nameSpace, lan}) !== STATE.notFetched) continue;
+  const startFetching = (lanNameSpacePairs:{nameSpace: STRING_NAMESPACE, lan: LAN}[]): boolean => {
+    lanNameSpacePairs = lanNameSpacePairs.filter((LanNameSpacePair) => {
+      return getFetchState(LanNameSpacePair) === STATE.notFetched;
+    });
+    if (lanNameSpacePairs.length === 0) return false;
 
-      setFetchState({nameSpace, lan, state: STATE.fetching});
-      needFetch = true;
+    setFetchState({lanNameSpacePairs, state: STATE.fetching});
+
+    return true;
+  };
+
+  const fetch = async ({lan, nameSpace}: LanNameSpacePair) => {
+    switch(nameSpace) {
+      case STRING_NAMESPACE.ui:
+        return await fetchUiTexts(lan);
+      case STRING_NAMESPACE.pokemonName:
+        return await fetchPokemonNames({lan});
+    }
+  };
+
+  const getFetchingLanNameSpacePairs = (): LanNameSpacePair[] => {
+    const res = [];
+    for (const lanStr of Object.keys(fetchState)) {
+      const lan = parseInt(lanStr, 10);
+      for (const [nameSpaceStr, state] of Object.entries(fetchState[lan])) {
+        if (state !== STATE.fetching) continue;
+        const nameSpace = parseInt(nameSpaceStr, 10);
+        res.push({lan, nameSpace});
+      }
     }
 
-    return needFetch;
+    return res;
   };
 
   useEffect(() => {
-    (async function() {
-      for (const lanStr of Object.keys(fetchState)) {
-        const lan = parseInt(lanStr, 10);
-        for (const [nameSpaceStr, state] of Object.entries(fetchState[lan])) {
-          const nameSpace = parseInt(nameSpaceStr, 10);
-          if (state !== STATE.fetching) continue;
-          let newStrings = {};
-          switch(nameSpace) {
-            case STRING_NAMESPACE.ui:
-              newStrings = await fetchUiTexts(lan);
-              break;
-            case STRING_NAMESPACE.pokemonName:
-              newStrings = await fetchPokemonNames({lan});
-              break;
-          }
-
-          setStrings((prevStrings) =>  ({
-            ...prevStrings,
-            [lan]: {
-              ...prevStrings[lan],
-              ...newStrings,
+    const fetchingLanNameSpacePairs = getFetchingLanNameSpacePairs();
+    if (fetchingLanNameSpacePairs.length) {
+      Promise.all(fetchingLanNameSpacePairs.map((f) => fetch(f)))
+        .then((res) => {
+          setStrings((prevState) =>  {
+            const newState: StringsState = {};
+            for (let i = 0; i < fetchingLanNameSpacePairs.length; i++) {
+              const {lan} = fetchingLanNameSpacePairs[i];
+              if (!newState[lan]) {
+                newState[lan] = {...prevState[lan]};
+              }
+              Object.assign(newState[lan], res[i]);
             }
-          }));
-          setFetchState({nameSpace, lan, state: STATE.fetched});
-        }
-      }
-    })();
+            return {
+              ...prevState,
+              ...newState,
+            }
+          });
+
+          setFetchState({lanNameSpacePairs: fetchingLanNameSpacePairs, state: STATE.fetched});
+        });
+    }
 
     if (nextLanRef.current && isLanFetched(nextLanRef.current)) {
       setLan(nextLanRef.current);
@@ -115,7 +141,7 @@ const LocaleProvider = ({children}: {children: ReactNode}) => {
 
   // TODO: Use different nameSpaces bease on path.
   const switchLan = (lan: LAN) => {
-    const needFetch = fetchLan({lan, nameSpaces: [STRING_NAMESPACE.ui, STRING_NAMESPACE.pokemonName]});
+    const needFetch = startFetching([{lan, nameSpace: STRING_NAMESPACE.ui}, {lan, nameSpace: STRING_NAMESPACE.pokemonName}]);
     if (needFetch) {
       nextLanRef.current = lan;
     } else {
@@ -130,7 +156,7 @@ const LocaleProvider = ({children}: {children: ReactNode}) => {
   };
 
   useEffect(() => {
-    switchLan(LAN.en);
+    switchLan(lan);
   }, []);
 
   return <LocaleContext.Provider value={contextValue}>
