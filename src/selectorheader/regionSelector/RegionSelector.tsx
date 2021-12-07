@@ -14,8 +14,8 @@ const RegionSelector = ({version, onChange}:ReionSelectorProps): JSX.Element => 
 
   return (
     <>
-      <div onClick={() => onChange(VERSION.red)}>{strings?.kanto}</div>
-      <div onClick={() => onChange(VERSION.gold)}>{strings?.johto}</div>
+      <div onClick={() => onChange(VERSION.red)}>{strings.kanto}</div>
+      <div onClick={() => onChange(VERSION.gold)}>{strings.johto}</div>
     </>
   )
 }

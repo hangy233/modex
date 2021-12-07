@@ -8,8 +8,14 @@ export enum LAN {
   'es',
   'it',
   'en',
+  'placeholder',
   'ja',
   'zh-Hans',
+};
+
+export enum STRING_NAMESPACE {
+  'ui',
+  'pokemonName',
 };
 
 //TODO: add language type
