@@ -6,7 +6,7 @@ import VersionSelector from '../selectorheader/versionselector/VersionSelector';
 import RecycledGrid from '../recycledgrid/RecycledGrid';
 import PmItem, {PmPlaceholder} from '../pmitem/PmItem';
 import { Routes, Route, useParams, useNavigate } from "react-router-dom";
-import { fetchGen1Name } from '../fetcher';
+import { fetchGen1Name } from '../fetcher/utils';
 import { LocaleContext } from '../i18n/LocaleContext';
 
 function PmGrid({pmList}) {

@@ -6,7 +6,7 @@ import { useContext } from 'react';
 import { LocaleContext } from '../../i18n/LocaleContext';
 
 type LanSelectorProps = {
-  onChange: (lan: LAN) => void,
+  onChange?: (lan: LAN) => void,
 };
 
 const LanSelector = ({onChange}: LanSelectorProps): JSX.Element => {
@@ -16,7 +16,7 @@ const LanSelector = ({onChange}: LanSelectorProps): JSX.Element => {
     if (!lanString) return;
     const lan = parseInt(lanString,10);
 
-    onChange(lan);
+    onChange && onChange(lan);
     switchLan(lan);
   };
 

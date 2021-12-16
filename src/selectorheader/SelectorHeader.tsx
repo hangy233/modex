@@ -16,16 +16,11 @@ const SelectorHeader = (): JSX.Element => {
     setSearchParams(searchParams);
   };
 
-  const setLanParam = (lan: LAN) => {
-    searchParams.set('lan', lan.toString(10));
-    setSearchParams(searchParams);
-  }
-
   return (
     <div>
       <RegionSelector version={version} onChange={setVersionParam}/>
       <VersionSelector version={version} onChange={setVersionParam} />
-      <LanSelector  onChange={setLanParam} />
+      <LanSelector />
     </div>
   );
 }

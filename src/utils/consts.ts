@@ -16,6 +16,7 @@ export enum LAN {
 export enum STRING_NAMESPACE {
   'ui',
   'pokemonName',
+  'pokemonDescription',
 };
 
 //TODO: add language type
@@ -75,7 +76,8 @@ export const LANGUAGES = [
 export const LAN_NAMES = LANGUAGES.map((l) => l.name);
 
 export enum VERSION {
-  'red' = 1,
+  'red',
+  'green',
   'blue',
   'yellow',
   'gold',

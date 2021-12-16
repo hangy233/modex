@@ -370,3 +370,5 @@ yarn-error.log*
 assets/
 
 /config
+
+/server
